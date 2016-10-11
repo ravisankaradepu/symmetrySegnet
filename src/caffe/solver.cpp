@@ -487,11 +487,13 @@ void SGDSolver<Dtype>::ApplyUpdate() {
   }
   ClipGradients();
   for (int param_id = 0; param_id < this->net_->params().size(); ++param_id) {
+/*
     if(this->net_->params()[param_id]->num_axes() == 4 && this->net_->params()[param_id]->shape()[3] > 1){
 	for(int i=0;i < this->net_->params()[param_id]->num_axes();i++)
 		LOG(INFO)<<"shape of "<<i<<" "<<this->net_->params()[param_id]->shape(i);
 	WeightNormalize(param_id);
 	} // End of if
+*/  
     Normalize(param_id);
     Regularize(param_id);
     ComputeUpdateValue(param_id, rate);
@@ -512,6 +514,9 @@ void SGDSolver<Dtype>::WeightNormalize(int param_id){
 			#endif
 			break;
 		} // End of GPU CASE
+		case Caffe::CPU: {
+			LOG(FATAL) << "NOT IMPLEMENTED CPU CODE";
+		}  // End of CPU CASE
 		default: LOG(FATAL) << "UNKNOWN CAFFE MODE";
 }	// End of swith
 Dtype *W_data = W->mutable_cpu_data();
@@ -525,7 +530,7 @@ void SGDSolver<Dtype>::Normalize(int param_id) {
   // Scale gradient to counterbalance accumulation.
   const vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
   const Dtype accum_normalization = Dtype(1.) / this->param_.iter_size();
-  switch (Caffe::mode()) {
+switch (Caffe::mode()) {
   case Caffe::CPU: {
     caffe_scal(net_params[param_id]->count(), accum_normalization,
         net_params[param_id]->mutable_cpu_diff());
@@ -547,13 +552,15 @@ void SGDSolver<Dtype>::Normalize(int param_id) {
 
 template <typename Dtype>
 void SGDSolver<Dtype>::Regularize(int param_id) {
-  const vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
+
+const vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
   const vector<float>& net_params_weight_decay =
       this->net_->params_weight_decay();
   Dtype weight_decay = this->param_.weight_decay();
   string regularization_type = this->param_.regularization_type();
   Dtype local_decay = weight_decay * net_params_weight_decay[param_id];
-  switch (Caffe::mode()) {
+  
+switch (Caffe::mode()) {
   case Caffe::CPU: {
     if (local_decay) {
       if (regularization_type == "L2") {
@@ -585,7 +592,8 @@ void SGDSolver<Dtype>::Regularize(int param_id) {
             local_decay,
             net_params[param_id]->gpu_data(),
             net_params[param_id]->mutable_gpu_diff());
-      } else if (regularization_type == "L1") {
+	LOG(INFO)<<"TESTIONG" << net_params[param_id]->cpu_diff()[0];     
+} else if (regularization_type == "L1") {
         caffe_gpu_sign(net_params[param_id]->count(),
             net_params[param_id]->gpu_data(),
             temp_[param_id]->mutable_gpu_data());
