@@ -503,12 +503,33 @@ void SGDSolver<Dtype>::ApplyUpdate() {
 
 template<typename Dtype>
 void SGDSolver<Dtype>::WeightNormalize(int param_id){
- const vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
- const boost::shared_ptr<caffe::Blob<Dtype> >& W = this->net_->params()[param_id]; 
+const vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
+const boost::shared_ptr<caffe::Blob<Dtype> >& W = this->net_->params()[param_id]; 
+size_t off;
 	switch(Caffe::mode())	{
 		case Caffe::GPU: {
-			#ifndef CPU_ONLY
-				
+			#ifndef CPU_ONLY	
+			Dtype *W_data= W->mutable_gpu_data();
+				for(int i1=0;i1<W->shape(0);i1++){
+				    Dtype sum=0;
+				    for (int i2=0;i2<W->shape(1);i2++){
+					for (int i3=0;i3<W->shape(2);i3++){
+					    for(int i4=0;i4<W->shape(3);i4++){
+						sum = sum+ W->data_at(i1,i2,i3,i4)*W->data_at(i1,i2,i3,i4);
+					    } // end of i4 loop
+					} // End of i3 loop
+				    } // End of i2 loop
+				  // calculated the sum, now normalizing
+				   for (int i2=0;i2<W->shape(1);i2++){
+					for (int i3=0;i3<W->shape(2);i3++){
+					    for(int i4=0;i4<W->shape(3);i4++){
+						off  = W->offset(i1,i2,i3,i4);
+						W_data[off] = W_data[off]/sum;
+					    } // end of i4 loop
+					} // End of i3 loop
+				    } // End of i2 loop
+
+			} // End of i1 loop
 			#else
 				NO_GPU;
 			#endif
