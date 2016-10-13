@@ -502,6 +502,12 @@ void SGDSolver<Dtype>::ApplyUpdate() {
 }
 
 template<typename Dtype>
+void SGDSolver<Dtype>::Projection(int param__id){
+
+
+} // End of projection
+
+template<typename Dtype>
 void SGDSolver<Dtype>::WeightNormalize(int param_id){
 const vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
 const boost::shared_ptr<caffe::Blob<Dtype> >& W = this->net_->params()[param_id]; 
