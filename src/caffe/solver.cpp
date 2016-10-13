@@ -496,6 +496,7 @@ void SGDSolver<Dtype>::ApplyUpdate() {
 */  
     Normalize(param_id);
     Regularize(param_id);
+    Projection(param_id);
     ComputeUpdateValue(param_id, rate);
   }
   this->net_->Update();
@@ -574,9 +575,6 @@ size_t off;
 		}  // End of CPU CASE
 		default: LOG(FATAL) << "UNKNOWN CAFFE MODE";
 }	// End of swith
-Dtype *W_data = W->mutable_cpu_data();
-	Dtype *W_gdata = W->mutable_gpu_data();
-	LOG(INFO)<<"TEST";
 	
 } // End of Weight normalize
 template <typename Dtype>
