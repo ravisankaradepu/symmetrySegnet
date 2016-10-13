@@ -502,9 +502,37 @@ void SGDSolver<Dtype>::ApplyUpdate() {
 }
 
 template<typename Dtype>
-void SGDSolver<Dtype>::Projection(int param__id){
+void SGDSolver<Dtype>::Projection(int param_id){
 
-
+Blob<Dtype> * blob = new Blob<Dtype>(this->net_->params()[param_id]->shape());
+const boost::shared_ptr<caffe::Blob<Dtype> >& W = this->net_->params()[param_id];
+Dtype* W_data = W->mutable_gpu_data();
+Dtype* blob_data = blob->mutable_gpu_data();
+blob->CopyFrom(*this->net_->params()[param_id],false,false);
+// used false, fasle coz, false => copy data
+// we apply (w^t grad(w))w in the blob and then substract
+Dtype scal_mul; // used for w^t * grad(w)
+size_t off;
+       for(int i1=0;i1<W->shape(0);i1++){
+            scal_mul = 0;
+            for(int i2=0;i2<W->shape(1);i2++){
+                for(int i3=0;i3<W->shape(2);i3++){
+                    for(int i4=0;i4<W->shape(3);i4++){
+                        scal_mul=scal_mul+W->data_at(i1,i2,i3,i4)*W->diff_at(i1,i2,i3,i4);
+                    } //End of i4 loop
+                }// End of i3 loop
+            } // End of i2 loop
+            // do scal_mul* W ( here W is copied into blob data)
+         for(int i2=0;i2<W->shape(1);i2++){
+                for(int i3=0;i3<W->shape(2);i3++){
+                    for(int i4=0;i4<W->shape(3);i4++){
+                        off=blob->offset(i1,i2,i3,i4);
+                        blob_data[off]=blob_data[off]*scal_mul;
+                    } //End of i4 loop
+                }// End of i3 loop
+            } // End of i2 loop
+}// End of i1 loop
+caffe_sub(blob->count(),this->net_->params()[param_id]->gpu_diff(),blob->gpu_diff(),W_data);
 } // End of projection
 
 template<typename Dtype>
