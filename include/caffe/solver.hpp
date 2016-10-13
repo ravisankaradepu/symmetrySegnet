@@ -81,6 +81,7 @@ class SGDSolver : public Solver<Dtype> {
   void PreSolve();
   Dtype GetLearningRate();
   virtual void WeightNormalize(int param_id);
+  virtual void Projection(int param_id);
   virtual void ApplyUpdate();
   virtual void Normalize(int param_id);
   virtual void Regularize(int param_id);
