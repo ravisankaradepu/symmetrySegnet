@@ -349,5 +349,5 @@
     /usr/include/leveldb/status.h \
     /usr/include/leveldb/options.h \
     /usr/include/leveldb/write_batch.h \
-    /usr/include/lmdb.h \
+    /usr/local/include/lmdb.h \
     ./include/caffe/util/io.hpp

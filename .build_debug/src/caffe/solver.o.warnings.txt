@@ -1,8 +1,8 @@
-src/caffe/solver.cpp: In instantiation of ‘void caffe::SGDSolver<Dtype>::WeightNormalize(int) [with Dtype = float]’:
-src/caffe/solver.cpp:865:1:   required from here
-src/caffe/solver.cpp:541:42: warning: unused variable ‘net_params’ [-Wunused-variable]
- const vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
-                                          ^
-src/caffe/solver.cpp: In instantiation of ‘void caffe::SGDSolver<Dtype>::WeightNormalize(int) [with Dtype = double]’:
-src/caffe/solver.cpp:865:1:   required from here
-src/caffe/solver.cpp:541:42: warning: unused variable ‘net_params’ [-Wunused-variable]
+src/caffe/solver.cpp: In instantiation of ‘void caffe::SGDSolver<Dtype>::Projection(int) [with Dtype = float]’:
+src/caffe/solver.cpp:864:1:   required from here
+src/caffe/solver.cpp:509:8: warning: unused variable ‘W_data’ [-Wunused-variable]
+ Dtype* W_data = W->mutable_cpu_data();
+        ^
+src/caffe/solver.cpp: In instantiation of ‘void caffe::SGDSolver<Dtype>::Projection(int) [with Dtype = double]’:
+src/caffe/solver.cpp:864:1:   required from here
+src/caffe/solver.cpp:509:8: warning: unused variable ‘W_data’ [-Wunused-variable]
