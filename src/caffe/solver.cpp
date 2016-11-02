@@ -489,7 +489,7 @@ void SGDSolver<Dtype>::ApplyUpdate() {
   for (int param_id = 0; param_id < this->net_->params().size(); ++param_id) {
 
     if(this->net_->params()[param_id]->num_axes() == 4 && this->net_->params()[param_id]->shape()[3] > 1){
-//	WeightNormalize(param_id);
+	WeightNormalize(param_id);
 	} // End of if
   
     Normalize(param_id);
@@ -513,6 +513,8 @@ blob->CopyFrom(*this->net_->params()[param_id],false,false);
 // we apply (w^t grad(w))w in the blob and then substract
 Dtype scal_mul=2; // used for w^t * grad(w)
 size_t off;
+
+/*
        for(int i1=0;i1<W->shape(0);i1++){
             scal_mul = 0;
             for(int i2=0;i2<W->shape(1);i2++){
@@ -532,6 +534,7 @@ size_t off;
                 }// End of i3 loop
             } // End of i2 loop
 }// End of i1 loop
+*/
 //caffe_sub(blob->count(),this->net_->params()[param_id]->gpu_diff(),blob->gpu_diff(),W_data);
 } // End of projection
 
@@ -539,11 +542,29 @@ template<typename Dtype>
 void SGDSolver<Dtype>::WeightNormalize(int param_id){
 //const vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
 const boost::shared_ptr<caffe::Blob<Dtype> >& W = this->net_->params()[param_id]; 
+int d1 =  W->shape()[0], d2=W->shape()[1], d3=W->shape()[2],d4=W->shape()[3];
+W->Reshape(d1,d2*d3*d4,1,1);
+LOG(INFO)<<"reshaped";
 size_t off;
+W->Reshape(d1,d2,d3,d4);
+
 	switch(Caffe::mode())	{
 		case Caffe::GPU: {
 			#ifndef CPU_ONLY	
-			Dtype* W_data= W->mutable_cpu_data();
+			Dtype* W_data = W->mutable_cpu_data();
+			for(int i1=0;i1<W->shape(0);i1++){
+			Dtype sum = 0;
+				for(int i2=0;i2<W->shape(1);i2++){
+					sum = sum + W->data_at(i1,i2,1,1)*W->data_at(i1,i2,1,1);
+				}	// End of i2 loop
+				sum = sum*1.0;
+				for(int i2=0; i2<W->shape(1);i2++){
+					off = W->offset(i1,i2,1,1);
+					W_data[off] = W->data_at(i1,i2,1,1) / sum;
+				} // end of i2 loop
+			} // end of i1 loop
+			W->Reshape(d1,d2,d3,d4);
+		/*	Dtype* W_data= W->mutable_cpu_data();
 				for(int i1=0;i1<W->shape(0);i1++){
 				    Dtype sum=0;
 				    for (int i2=0;i2<W->shape(1);i2++){
@@ -565,6 +586,7 @@ size_t off;
 				    } // End of i2 loop
 
 			} // End of i1 loop
+		*/
 			#else
 				NO_GPU;
 			#endif
